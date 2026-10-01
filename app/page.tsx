@@ -49,7 +49,9 @@ export default function EasyChargeCalculator() {
 
     try {
       const totalConsumption = equipment.reduce((sum, eq) => sum + eq.watts, 0)
-      const response = await axios.post('/api/recommend', { totalConsumption })
+      // Aplicar margen de seguridad (20%) ANTES de enviar a la API
+      const requiredPower = Math.ceil(totalConsumption * 1.2)
+      const response = await axios.post('/api/recommend', { totalConsumption: requiredPower })
       setRecommendation(response.data)
     } catch (err: any) {
       setError(err.response?.data?.error || 'Error al obtener recomendación')
@@ -82,8 +84,11 @@ export default function EasyChargeCalculator() {
       // Watts necesarios (asumiendo distribución uniforme en horas)
       const wattsNeeded = (kWhToGenerate * 1000) / hours
 
+      // Aplicar margen de seguridad (20%) ANTES de enviar a la API
+      const requiredPower = Math.ceil(wattsNeeded * 1.2)
+
       // Obtener recomendación del generador
-      const response = await axios.post('/api/recommend', { totalConsumption: wattsNeeded })
+      const response = await axios.post('/api/recommend', { totalConsumption: requiredPower })
 
       // Calcular ahorros
       const monthlySavings = bill * percent
