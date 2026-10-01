@@ -1,49 +1,61 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+// DATOS DE PRODUCTOS EASY CHARGE - DATOS REALES SEPT 2026
 const SECCO_PRODUCTS = [
   {
     id: 1,
-    name: 'Inversor Solar 3kW + Batería Litio 3.6kWh',
-    power: '3000W',
-    battery: '3.6kWh',
-    price: '$35,000',
-    autonomy: '1-2 horas',
+    name: 'Pack 4kW - Inversor 4kW Monofásico + Batería 192V 100Ah',
+    power: '4000W',
+    battery: '192V 100Ah (19.2kWh)',
+    price: 'Consultar',
+    autonomy: '4-5 horas',
     minPower: 0,
-    maxPower: 3000,
-    specs: 'Potencia: 3kW | Batería: 3.6kWh | Voltaje: 51.2V 70Ah | Certificaciones: IEC 62619'
+    maxPower: 4000,
+    specs: 'Inversor Híbrido Monofásico 48V | Batería Litio 192V 100Ah | Potencia: 4kW | Capacidad: 19.2kWh | Voltaje: 51.2V'
   },
   {
     id: 2,
-    name: 'Inversor Solar 4kW + Batería Litio 4.6kWh',
-    power: '4000W',
-    battery: '4.6kWh',
-    price: '$45,000',
-    autonomy: '2-3 horas',
+    name: 'Pack 6kW - Inversor 6kW Monofásico + Batería 192V 150Ah',
+    power: '6000W',
+    battery: '192V 150Ah (28.8kWh)',
+    price: 'Consultar',
+    autonomy: '5-6 horas',
     minPower: 2001,
-    maxPower: 4000,
-    specs: 'Potencia: 4kW | Batería: 4.6kWh | Voltaje: 51.2V 90Ah | Certificaciones: IEC 62619, IEC 62109-1'
+    maxPower: 6000,
+    specs: 'Inversor Híbrido Monofásico 48V/192V | Batería Litio 192V 150Ah | Potencia: 6kW | Capacidad: 28.8kWh | Voltaje: 51.2V'
   },
   {
     id: 3,
-    name: 'Inversor Solar 5kW + Batería Litio 5.12kWh',
-    power: '5000W',
-    battery: '5.12kWh',
-    price: '$55,000',
-    autonomy: '3-4 horas',
+    name: 'Pack 8kW - Inversor 8kW Trifásico + Batería 512V 120Ah',
+    power: '8000W',
+    battery: '512V 120Ah (61.44kWh)',
+    price: 'Consultar',
+    autonomy: '7-8 horas',
     minPower: 4001,
-    maxPower: 5000,
-    specs: 'Potencia: 5kW | Batería: 5.12kWh | Voltaje: 51.2V 100Ah | Certificaciones: IEC 62619, IEC 62109-1'
+    maxPower: 8000,
+    specs: 'Inversor Híbrido Trifásico 384V/400V | Batería Litio 512V 120Ah | Potencia: 8kW | Capacidad: 61.44kWh | Voltaje: 400V Trifásico'
   },
   {
     id: 4,
-    name: 'Inversor Solar 6kW + Batería Litio 6.14kWh',
-    power: '6000W',
-    battery: '6.14kWh',
-    price: '$65,000',
+    name: 'Pack 12kW - Inversor 12kW Trifásico + Batería 512V 120Ah',
+    power: '12000W',
+    battery: '512V 120Ah (61.44kWh)',
+    price: 'Consultar',
+    autonomy: '5-6 horas',
+    minPower: 6001,
+    maxPower: 12000,
+    specs: 'Inversor Híbrido Trifásico 384V/400V | Batería Litio 512V 120Ah | Potencia: 12kW | Capacidad: 61.44kWh | Voltaje: 400V Trifásico'
+  },
+  {
+    id: 5,
+    name: 'Pack 15kW - Inversor 15kW Trifásico + Batería 512V 120Ah',
+    power: '15000W',
+    battery: '512V 120Ah (61.44kWh)',
+    price: 'Consultar',
     autonomy: '4-5 horas',
-    minPower: 5001,
-    maxPower: 6000,
-    specs: 'Potencia: 6kW | Batería: 6.14kWh | Voltaje: 51.2V 120Ah | Certificaciones: IEC 62619, IEC 62109-1'
+    minPower: 8001,
+    maxPower: 15000,
+    specs: 'Inversor Híbrido Trifásico 384V/400V | Batería Litio 512V 120Ah | Potencia: 15kW | Capacidad: 61.44kWh | Voltaje: 400V Trifásico'
   }
 ]
 
@@ -59,8 +71,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Calcular con margen de seguridad (20%)
     const requiredPower = totalConsumption * 1.2
 
+    // Buscar producto que cubre el consumo
     const recommendation = SECCO_PRODUCTS.find(
       product => requiredPower <= product.maxPower
     )
@@ -69,7 +83,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: 'No hay producto disponible para ese consumo',
-          suggestion: 'Considera reducir el consumo o contacta con Easy Charge'
+          suggestion: 'Considera reducir el consumo o contacta con Easy Charge para una solución personalizada'
         },
         { status: 400 }
       )
@@ -83,7 +97,7 @@ export async function POST(request: NextRequest) {
       autonomy: recommendation.autonomy,
       specs: recommendation.specs,
       requiredPower: Math.round(requiredPower),
-      message: `✅ Este producto cubre tus necesidades (${Math.round(requiredPower)}W requeridos)`
+      message: `✅ Este producto cubre tus necesidades (${Math.round(requiredPower)}W requeridos con margen de seguridad)`
     })
   } catch (error) {
     console.error('Error in recommendation API:', error)
