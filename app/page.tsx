@@ -22,7 +22,6 @@ export default function EasyChargeCalculator() {
   const [savingsPercent, setSavingsPercent] = useState('')
   const [savingsRecommendation, setSavingsRecommendation] = useState<any>(null)
 
-  // CALCULADOR: Agregar equipo
   const addEquipment = () => {
     if (!equipmentName || !equipmentWatts) {
       setError('Por favor completa nombre y consumo')
@@ -34,12 +33,10 @@ export default function EasyChargeCalculator() {
     setError('')
   }
 
-  // CALCULADOR: Eliminar equipo
   const removeEquipment = (index: number) => {
     setEquipment(equipment.filter((_, i) => i !== index))
   }
 
-  // CALCULADOR: Obtener recomendación
   const getRecommendation = async () => {
     if (equipment.length === 0) {
       setError('Agrega al menos un equipo')
@@ -60,7 +57,6 @@ export default function EasyChargeCalculator() {
     }
   }
 
-  // OPTIMIZADOR: Calcular ahorro
   const calculateSavings = async () => {
     if (!billAmount || !dailyHours || !savingsPercent) {
       setError('Por favor completa todos los campos')
@@ -75,24 +71,14 @@ export default function EasyChargeCalculator() {
       const hours = parseFloat(dailyHours)
       const percent = parseFloat(savingsPercent) / 100
 
-      // Tarifa estimada (necesitamos asumir consumo promedio)
-      // Tarifa argentina promedio: ~$50-60/kWh (estimado)
-      const estimatedTariff = 50 // $/kWh
-
-      // Consumo actual estimado
-      const monthlyConsumption = bill / estimatedTariff // kWh/mes
+      const estimatedTariff = 50
+      const monthlyConsumption = bill / estimatedTariff
       const dailyConsumption = monthlyConsumption / 30
-
-      // kWh que necesita generar diariamente
       const kWhToGenerate = dailyConsumption * percent * hours
-
-      // Watts necesarios (asumiendo distribución uniforme en horas)
       const wattsNeeded = (kWhToGenerate * 1000) / hours
 
-      // Obtener recomendación del generador
       const response = await axios.post('/api/recommend', { totalConsumption: wattsNeeded })
 
-      // Calcular ahorros
       const monthlySavings = bill * percent
       const annualSavings = monthlySavings * 12
       const paybackMonths = Math.ceil((response.data.price ? parseFloat(response.data.price.replace(/[^0-9]/g, '')) : 500000) / monthlySavings)
@@ -116,7 +102,6 @@ export default function EasyChargeCalculator() {
     }
   }
 
-  // Generar PDF
   const generatePDF = async (contentId: string, filename: string) => {
     const element = document.getElementById(contentId)
     if (!element) return
@@ -130,24 +115,20 @@ export default function EasyChargeCalculator() {
     pdf.save(filename)
   }
 
-  // PANTALLA INICIAL
   if (mode === 'inicial') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-6">
         <div className="max-w-2xl mx-auto">
-          {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-blue-900 mb-2">Easy Charge</h1>
             <p className="text-lg text-gray-600">Soluciones de Energía Personalizada</p>
           </div>
 
-          {/* Pregunta Principal */}
           <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-8 text-center">
               ¿Cuál es tu necesidad?
             </h2>
 
-            {/* Opción 1: Calculador */}
             <button
               onClick={() => {
                 setMode('calculador')
@@ -167,7 +148,6 @@ export default function EasyChargeCalculator() {
               </div>
             </button>
 
-            {/* Opción 2: Optimizador */}
             <button
               onClick={() => {
                 setMode('optimizador')
@@ -186,7 +166,6 @@ export default function EasyChargeCalculator() {
               </div>
             </button>
 
-            {/* Opción 3: Paneles (Próximamente) */}
             <button
               disabled
               className="w-full p-6 border-2 border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed opacity-60"
@@ -206,14 +185,12 @@ export default function EasyChargeCalculator() {
     )
   }
 
-  // PANTALLA CALCULADOR
   if (mode === 'calculador') {
     const totalWatts = equipment.reduce((sum, eq) => sum + eq.watts, 0)
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-6">
         <div className="max-w-4xl mx-auto">
-          {/* Header */}
           <button
             onClick={() => {
               setMode('inicial')
@@ -229,7 +206,6 @@ export default function EasyChargeCalculator() {
             Calculador de Generador
           </h1>
 
-          {/* Formulario */}
           <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
             <h2 className="text-xl font-bold text-gray-800 mb-4">Agregar Equipos</h2>
 
@@ -258,7 +234,6 @@ export default function EasyChargeCalculator() {
             </button>
           </div>
 
-          {/* Lista de Equipos */}
           {equipment.length > 0 && (
             <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
               <h2 className="text-xl font-bold text-gray-800 mb-4">Equipos Agregados</h2>
@@ -301,67 +276,162 @@ export default function EasyChargeCalculator() {
             </div>
           )}
 
-          {/* Recomendación */}
           {recommendation && (
-            <div
-              id="pdf-calculador"
-              className="bg-white rounded-lg shadow-lg p-6 mb-6 border-2 border-green-300"
-            >
-              <h2 className="text-2xl font-bold text-green-900 mb-4">✅ Recomendación</h2>
+            <>
+              <div className="bg-white rounded-lg shadow-lg p-6 mb-6 border-2 border-green-300">
+                <h2 className="text-2xl font-bold text-green-900 mb-4">✅ Recomendación</h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div className="bg-blue-50 p-4 rounded">
-                  <p className="text-gray-600 text-sm">Consumo solicitado</p>
-                  <p className="text-2xl font-bold text-blue-900">{totalWatts}W</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="bg-blue-50 p-4 rounded">
+                    <p className="text-gray-600 text-sm">Consumo solicitado</p>
+                    <p className="text-2xl font-bold text-blue-900">{totalWatts}W</p>
+                  </div>
+
+                  <div className="bg-green-50 p-4 rounded">
+                    <p className="text-gray-600 text-sm">Con margen de seguridad (+50%)</p>
+                    <p className="text-2xl font-bold text-green-900">
+                      {Math.round(totalWatts * 1.5)}W
+                    </p>
+                  </div>
+
+                  <div className="bg-purple-50 p-4 rounded md:col-span-2">
+                    <p className="text-gray-600 text-sm">Generador Recomendado</p>
+                    <p className="text-2xl font-bold text-purple-900">{recommendation.productName}</p>
+                  </div>
+
+                  <div className="bg-yellow-50 p-4 rounded">
+                    <p className="text-gray-600 text-sm">Potencia</p>
+                    <p className="text-xl font-bold text-yellow-900">{recommendation.power}</p>
+                  </div>
+
+                  <div className="bg-orange-50 p-4 rounded">
+                    <p className="text-gray-600 text-sm">Batería</p>
+                    <p className="text-xl font-bold text-orange-900">{recommendation.battery}</p>
+                  </div>
+
+                  <div className="bg-indigo-50 p-4 rounded">
+                    <p className="text-gray-600 text-sm">Autonomía</p>
+                    <p className="text-xl font-bold text-indigo-900">{recommendation.autonomy}</p>
+                  </div>
+
+                  <div className="bg-red-50 p-4 rounded">
+                    <p className="text-gray-600 text-sm">Precio</p>
+                    <p className="text-xl font-bold text-red-900">{recommendation.price}</p>
+                  </div>
                 </div>
 
-                <div className="bg-green-50 p-4 rounded">
-                  <p className="text-gray-600 text-sm">Con margen de seguridad (+50%)</p>
-                  <p className="text-2xl font-bold text-green-900">
-                    {Math.round(totalWatts * 1.5)}W
-                  </p>
-                </div>
+                <p className="text-gray-700 mb-6 p-4 bg-gray-50 rounded">
+                  <strong>Beneficios:</strong> Este generador cubre con holgura tu consumo actual y te
+                  permite agregar más equipos sin problemas. Ideal para emergencias y crecimiento futuro.
+                </p>
 
-                <div className="bg-purple-50 p-4 rounded md:col-span-2">
-                  <p className="text-gray-600 text-sm">Generador Recomendado</p>
-                  <p className="text-2xl font-bold text-purple-900">{recommendation.productName}</p>
-                </div>
-
-                <div className="bg-yellow-50 p-4 rounded">
-                  <p className="text-gray-600 text-sm">Potencia</p>
-                  <p className="text-xl font-bold text-yellow-900">{recommendation.power}</p>
-                </div>
-
-                <div className="bg-orange-50 p-4 rounded">
-                  <p className="text-gray-600 text-sm">Batería</p>
-                  <p className="text-xl font-bold text-orange-900">{recommendation.battery}</p>
-                </div>
-
-                <div className="bg-indigo-50 p-4 rounded">
-                  <p className="text-gray-600 text-sm">Autonomía</p>
-                  <p className="text-xl font-bold text-indigo-900">{recommendation.autonomy}</p>
-                </div>
-
-                <div className="bg-red-50 p-4 rounded">
-                  <p className="text-gray-600 text-sm">Precio</p>
-                  <p className="text-xl font-bold text-red-900">{recommendation.price}</p>
-                </div>
+                <button
+                  onClick={() => generatePDF('pdf-calculador', 'cotizacion-easy-charge.pdf')}
+                  className="w-full bg-red-600 text-white py-2 rounded font-semibold hover:bg-red-700 transition"
+                >
+                  📄 Descargar PDF
+                </button>
               </div>
 
-              <p className="text-gray-700 mb-6 p-4 bg-gray-50 rounded">
-                <strong>Beneficios:</strong> Este generador cubre con holgura tu consumo actual y te
-                permite agregar más equipos sin problemas. Ideal para emergencias y crecimiento futuro.
-              </p>
+              {/* PDF - Factura profesional (oculto) */}
+              <div id="pdf-calculador" className="hidden">
+                <div style={{ width: '210mm', height: '297mm', padding: '20px', fontFamily: 'Arial, sans-serif', fontSize: '12px', backgroundColor: 'white' }}>
+                  {/* Header */}
+                  <div style={{ borderBottom: '3px solid #1F4E78', paddingBottom: '15px', marginBottom: '20px' }}>
+                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#1F4E78' }}>EASY CHARGE</div>
+                    <div style={{ fontSize: '11px', color: '#666' }}>Soluciones de Energía Renovable</div>
+                  </div>
 
-              <p className="text-gray-600 text-sm mb-4">{recommendation.specs}</p>
+                  {/* Datos de Cotización */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', fontSize: '11px' }}>
+                    <div>
+                      <div><strong>Cotización Nº:</strong> EC-{new Date().getFullYear()}-{Math.floor(Math.random() * 10000)}</div>
+                      <div><strong>Fecha:</strong> {new Date().toLocaleDateString('es-AR')}</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div><strong>Técnico:</strong> Easy Charge</div>
+                      <div><strong>Válida por:</strong> 30 días</div>
+                    </div>
+                  </div>
 
-              <button
-                onClick={() => generatePDF('pdf-calculador', 'cotizacion-easy-charge.pdf')}
-                className="w-full bg-red-600 text-white py-2 rounded font-semibold hover:bg-red-700 transition"
-              >
-                📄 Descargar PDF
-              </button>
-            </div>
+                  {/* Equipos */}
+                  <div style={{ marginBottom: '20px' }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: '10px', fontSize: '13px', borderBottom: '2px solid #1F4E78', paddingBottom: '5px' }}>
+                      EQUIPOS SOLICITADOS
+                    </div>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '10px' }}>
+                      <thead>
+                        <tr style={{ backgroundColor: '#E8F0F7' }}>
+                          <th style={{ textAlign: 'left', padding: '8px', borderBottom: '1px solid #999' }}>Equipo</th>
+                          <th style={{ textAlign: 'right', padding: '8px', borderBottom: '1px solid #999' }}>Consumo (W)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {equipment.map((eq, idx) => (
+                          <tr key={idx} style={{ borderBottom: '1px solid #ddd' }}>
+                            <td style={{ padding: '8px' }}>{eq.name}</td>
+                            <td style={{ textAlign: 'right', padding: '8px' }}>{eq.watts}W</td>
+                          </tr>
+                        ))}
+                        <tr style={{ fontWeight: 'bold', backgroundColor: '#F5F5F5' }}>
+                          <td style={{ padding: '8px' }}>TOTAL CONSUMO</td>
+                          <td style={{ textAlign: 'right', padding: '8px' }}>{totalWatts}W</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Recomendación */}
+                  <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#F0F8F0', border: '2px solid #4CAF50' }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: '10px', fontSize: '13px', color: '#1F4E78' }}>
+                      ✓ GENERADOR RECOMENDADO
+                    </div>
+                    <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#1F4E78', marginBottom: '10px' }}>
+                      {recommendation.productName}
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '11px' }}>
+                      <div><strong>Potencia:</strong> {recommendation.power}</div>
+                      <div><strong>Batería:</strong> {recommendation.battery}</div>
+                      <div><strong>Autonomía:</strong> {recommendation.autonomy}</div>
+                      <div><strong>Precio:</strong> {recommendation.price}</div>
+                    </div>
+                  </div>
+
+                  {/* Beneficios */}
+                  <div style={{ marginBottom: '20px', paddingLeft: '10px', fontSize: '11px', lineHeight: '1.6' }}>
+                    <strong>Beneficios de esta solución:</strong>
+                    <ul style={{ marginTop: '5px', paddingLeft: '20px' }}>
+                      <li>✓ Cubre tu consumo actual con margen de seguridad</li>
+                      <li>✓ Permite agregar más equipos sin problemas</li>
+                      <li>✓ Ideal para emergencias y crecimiento futuro</li>
+                      <li>✓ Energía limpia y renovable</li>
+                    </ul>
+                  </div>
+
+                  {/* Firma */}
+                  <div style={{ marginTop: '30px', borderTop: '1px solid #999', paddingTop: '20px', fontSize: '11px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <div style={{ textAlign: 'center', width: '45%' }}>
+                        <div style={{ height: '40px' }}></div>
+                        <div>Firma del Cliente</div>
+                        <div style={{ fontSize: '10px', marginTop: '5px' }}>Fecha: ______________</div>
+                      </div>
+                      <div style={{ textAlign: 'center', width: '45%' }}>
+                        <div style={{ height: '40px' }}></div>
+                        <div>Firma del Técnico</div>
+                        <div style={{ fontSize: '10px', marginTop: '5px' }}>Easy Charge</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div style={{ marginTop: '20px', paddingTop: '10px', borderTop: '1px solid #999', textAlign: 'center', fontSize: '9px', color: '#666' }}>
+                    <div>Easy Charge - Soluciones de Energía Renovable</div>
+                    <div>Energía sostenible para tu futuro</div>
+                  </div>
+                </div>
+              </div>
+            </>
           )}
 
           {error && <div className="text-red-600 font-semibold text-center">{error}</div>}
@@ -370,12 +440,10 @@ export default function EasyChargeCalculator() {
     )
   }
 
-  // PANTALLA OPTIMIZADOR
   if (mode === 'optimizador') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-6">
         <div className="max-w-4xl mx-auto">
-          {/* Header */}
           <button
             onClick={() => {
               setMode('inicial')
@@ -390,7 +458,6 @@ export default function EasyChargeCalculator() {
             Optimizador de Costos
           </h1>
 
-          {/* Formulario */}
           <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
             <h2 className="text-xl font-bold text-gray-800 mb-4">Calcula tu Ahorro</h2>
 
@@ -444,12 +511,8 @@ export default function EasyChargeCalculator() {
             </div>
           </div>
 
-          {/* Resultado */}
           {savingsRecommendation && (
-            <div
-              id="pdf-optimizador"
-              className="bg-white rounded-lg shadow-lg p-6 mb-6 border-2 border-green-300"
-            >
+            <div className="bg-white rounded-lg shadow-lg p-6 mb-6 border-2 border-green-300">
               <h2 className="text-2xl font-bold text-green-900 mb-4">💰 Análisis de Ahorro</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -492,20 +555,6 @@ export default function EasyChargeCalculator() {
                   <p className="text-gray-600 text-sm">Generador recomendado</p>
                   <p className="text-xl font-bold text-indigo-900">
                     {savingsRecommendation.productName}
-                  </p>
-                </div>
-
-                <div className="bg-yellow-50 p-4 rounded">
-                  <p className="text-gray-600 text-sm">kWh/día necesarios</p>
-                  <p className="text-xl font-bold text-yellow-900">
-                    {savingsRecommendation.kWhToGenerate} kWh
-                  </p>
-                </div>
-
-                <div className="bg-teal-50 p-4 rounded">
-                  <p className="text-gray-600 text-sm">Potencia recomendada</p>
-                  <p className="text-xl font-bold text-teal-900">
-                    {savingsRecommendation.wattsNeeded}W
                   </p>
                 </div>
               </div>
