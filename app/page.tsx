@@ -116,16 +116,69 @@ export default function EasyChargeCalculator() {
   }
 
   const generatePDF = async (contentId: string, filename: string) => {
-    const element = document.getElementById(contentId)
-    if (!element) return
+    setLoading(true)
+    try {
+      const element = document.getElementById(contentId)
+      if (!element) {
+        setError('No se pudo encontrar el contenido para generar PDF')
+        return
+      }
 
-    const canvas = await html2canvas(element, { scale: 2 })
-    const imgData = canvas.toDataURL('image/png')
-    const pdf = new jsPDF()
-    const imgWidth = 210
-    const imgHeight = (canvas.height * imgWidth) / canvas.width
-    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight)
-    pdf.save(filename)
+      // Mostrar temporalmente el elemento
+      const originalDisplay = element.style.display
+      element.style.display = 'block'
+      element.style.position = 'absolute'
+      element.style.top = '-10000px'
+
+      // Esperar a que se renderice
+      await new Promise(resolve => setTimeout(resolve, 200))
+
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        allowTaint: true
+      })
+
+      // Restaurar estado original
+      element.style.display = originalDisplay
+      element.style.position = ''
+      element.style.top = ''
+
+      const imgData = canvas.toDataURL('image/png')
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      })
+
+      const imgWidth = 210
+      const imgHeight = (canvas.height * imgWidth) / canvas.width
+
+      // Si es muy alto, agregar múltiples páginas
+      let yOffset = 0
+      const pageHeight = 297
+      let heightLeft = imgHeight
+
+      while (heightLeft >= 0) {
+        pdf.addImage(imgData, 'PNG', 0, yOffset, imgWidth, Math.min(heightLeft, pageHeight))
+        heightLeft -= pageHeight
+        yOffset -= pageHeight
+
+        if (heightLeft > 0) {
+          pdf.addPage()
+        }
+      }
+
+      pdf.save(filename)
+      setError('')
+    } catch (err: any) {
+      console.error('Error generating PDF:', err)
+      setError(`Error al generar PDF: ${err.message}`)
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (mode === 'inicial') {
