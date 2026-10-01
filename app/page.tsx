@@ -652,6 +652,122 @@ export default function EasyChargeCalculator() {
               >
                 📄 Descargar PDF
               </button>
+
+              <div id="pdf-optimizador" className="hidden">
+                <div style={{ width: '210mm', height: '297mm', padding: '20px', fontFamily: 'Arial, sans-serif', fontSize: '12px', backgroundColor: 'white' }}>
+                  <div style={{ borderBottom: '3px solid #1F4E78', paddingBottom: '15px', marginBottom: '20px' }}>
+                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#1F4E78' }}>EASY CHARGE</div>
+                    <div style={{ fontSize: '11px', color: '#666' }}>Análisis de Ahorro Energético</div>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', fontSize: '11px' }}>
+                    <div>
+                      <div><strong>Análisis Nº:</strong> EA-{new Date().getFullYear()}-{Math.floor(Math.random() * 10000)}</div>
+                      <div><strong>Fecha:</strong> {new Date().toLocaleDateString('es-AR')}</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div><strong>Técnico:</strong> Easy Charge</div>
+                      <div><strong>Válida por:</strong> 30 días</div>
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#F0F8F0', border: '2px solid #4CAF50' }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: '10px', fontSize: '13px', color: '#1F4E78' }}>
+                      📊 ANÁLISIS DE SITUACIÓN ACTUAL
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', fontSize: '12px' }}>
+                      <div>
+                        <div><strong>Factura actual:</strong></div>
+                        <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#d32f2f' }}>
+                          ${savingsRecommendation.currentBill.toLocaleString()}
+                        </div>
+                      </div>
+                      <div>
+                        <div><strong>Consumo:</strong></div>
+                        <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#1976d2' }}>
+                          {savingsRecommendation.currentConsumption} kWh/mes
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#FFF8E1', border: '2px solid #FBC02D' }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: '10px', fontSize: '13px', color: '#1F4E78' }}>
+                      💰 PROYECCIÓN DE AHORROS
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', fontSize: '12px' }}>
+                      <div>
+                        <div><strong>Reducción deseada:</strong></div>
+                        <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#c62828' }}>
+                          {savingsRecommendation.savingsPercent.toFixed(0)}%
+                        </div>
+                      </div>
+                      <div>
+                        <div><strong>Ahorro mensual:</strong></div>
+                        <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#00796b' }}>
+                          ${savingsRecommendation.monthlySavings.toLocaleString('es-AR', { maximumFractionDigits: 0 })}
+                        </div>
+                      </div>
+                      <div>
+                        <div><strong>Ahorro anual:</strong></div>
+                        <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#00796b' }}>
+                          ${savingsRecommendation.annualSavings.toLocaleString('es-AR', { maximumFractionDigits: 0 })}
+                        </div>
+                      </div>
+                      <div>
+                        <div><strong>Payback:</strong></div>
+                        <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#fbc02d' }}>
+                          {savingsRecommendation.paybackMonths} meses
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#E3F2FD', border: '2px solid #1976d2' }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: '10px', fontSize: '13px', color: '#1F4E78' }}>
+                      ✓ GENERADOR RECOMENDADO
+                    </div>
+                    <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#1F4E78', marginBottom: '10px' }}>
+                      {savingsRecommendation.productName}
+                    </div>
+                    <div style={{ fontSize: '11px', lineHeight: '1.6' }}>
+                      <div><strong>Batería:</strong> {savingsRecommendation.battery}</div>
+                      <div><strong>Autonomía:</strong> {savingsRecommendation.autonomy}</div>
+                      <div><strong>Operación diaria:</strong> {savingsRecommendation.dailyHours} horas/día</div>
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: '20px', paddingLeft: '10px', fontSize: '11px', lineHeight: '1.6' }}>
+                    <strong>Conclusión:</strong>
+                    <p style={{ marginTop: '5px' }}>
+                      Con este generador funcionando {savingsRecommendation.dailyHours} horas/día, lograrás una reducción del {savingsRecommendation.savingsPercent.toFixed(0)}% en tu factura de luz, representando un ahorro de <strong>${savingsRecommendation.monthlySavings.toLocaleString('es-AR', { maximumFractionDigits: 0 })}/mes</strong> (${savingsRecommendation.annualSavings.toLocaleString('es-AR', { maximumFractionDigits: 0 })}/año).
+                    </p>
+                    <p>
+                      Tu inversión se amortiza en aproximadamente <strong>{savingsRecommendation.paybackMonths} meses</strong> de operación.
+                    </p>
+                  </div>
+
+                  <div style={{ marginTop: '30px', borderTop: '1px solid #999', paddingTop: '20px', fontSize: '11px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <div style={{ textAlign: 'center', width: '45%' }}>
+                        <div style={{ height: '40px' }}></div>
+                        <div>Firma del Cliente</div>
+                        <div style={{ fontSize: '10px', marginTop: '5px' }}>Fecha: ______________</div>
+                      </div>
+                      <div style={{ textAlign: 'center', width: '45%' }}>
+                        <div style={{ height: '40px' }}></div>
+                        <div>Firma del Técnico</div>
+                        <div style={{ fontSize: '10px', marginTop: '5px' }}>Easy Charge</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: '20px', paddingTop: '10px', borderTop: '1px solid #999', textAlign: 'center', fontSize: '9px', color: '#666' }}>
+                    <div>Easy Charge - Soluciones de Energía Renovable</div>
+                    <div>Energía sostenible para tu futuro</div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
