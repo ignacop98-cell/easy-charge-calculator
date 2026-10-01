@@ -18,7 +18,7 @@ export default function EasyChargeCalculator() {
 
   // OPTIMIZADOR STATE
   const [billAmount, setBillAmount] = useState('')
-  const [tariff, setTariff] = useState('')
+  const [monthlyConsumption, setMonthlyConsumption] = useState('')
   const [dailyHours, setDailyHours] = useState('')
   const [savingsPercent, setSavingsPercent] = useState('')
   const [savingsRecommendation, setSavingsRecommendation] = useState<any>(null)
@@ -59,7 +59,7 @@ export default function EasyChargeCalculator() {
   }
 
   const calculateSavings = async () => {
-    if (!billAmount || !tariff || !dailyHours || !savingsPercent) {
+    if (!billAmount || !monthlyConsumption || !dailyHours || !savingsPercent) {
       setError('Por favor completa todos los campos')
       return
     }
@@ -69,18 +69,17 @@ export default function EasyChargeCalculator() {
 
     try {
       const bill = parseFloat(billAmount)
-      const tariffValue = parseFloat(tariff)
+      const consumptionKwh = parseFloat(monthlyConsumption)
       const hours = parseFloat(dailyHours)
       const percent = parseFloat(savingsPercent) / 100
 
-      // Consumo actual estimado
-      const monthlyConsumption = bill / tariffValue
-      const dailyConsumption = monthlyConsumption / 30
+      // Consumo diario en kWh
+      const dailyConsumptionKwh = consumptionKwh / 30
 
       // kWh que necesita generar diariamente
-      const kWhToGenerate = dailyConsumption * percent * hours
+      const kWhToGenerate = dailyConsumptionKwh * percent * hours
 
-      // Watts necesarios
+      // Watts necesarios (asumiendo distribución uniforme en horas)
       const wattsNeeded = (kWhToGenerate * 1000) / hours
 
       // Obtener recomendación del generador
@@ -94,12 +93,12 @@ export default function EasyChargeCalculator() {
       setSavingsRecommendation({
         ...response.data,
         currentBill: bill,
-        tariffValue: tariffValue,
+        currentConsumption: consumptionKwh,
         savingsPercent: percent * 100,
         monthlySavings,
         annualSavings,
         paybackMonths,
-        kWhPerDay: dailyConsumption,
+        kWhPerDay: dailyConsumptionKwh,
         kWhToGenerate: Math.round(kWhToGenerate),
         wattsNeeded: Math.round(wattsNeeded),
         dailyHours: hours
@@ -478,16 +477,16 @@ export default function EasyChargeCalculator() {
 
               <div>
                 <label className="block text-gray-700 font-semibold mb-2">
-                  ⚡ Tarifa de tu zona ($/kWh)
+                  ⚡ Consumo actual (kWh/mes)
                 </label>
                 <input
                   type="number"
-                  placeholder="Ej: 45, 60, 85"
-                  value={tariff}
-                  onChange={(e) => setTariff(e.target.value)}
+                  placeholder="Ej: 4000"
+                  value={monthlyConsumption}
+                  onChange={(e) => setMonthlyConsumption(e.target.value)}
                   className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
-                <p className="text-gray-500 text-sm mt-1">Tarifa promedio por kWh en tu provincia</p>
+                <p className="text-gray-500 text-sm mt-1">Divide: Monto total ÷ tarifa de tu boleta ($/kWh)</p>
               </div>
 
               <div>
@@ -538,10 +537,10 @@ export default function EasyChargeCalculator() {
                   </p>
                 </div>
 
-                <div className="bg-purple-50 p-4 rounded">
-                  <p className="text-gray-600 text-sm">Tarifa de tu zona</p>
-                  <p className="text-2xl font-bold text-purple-900">
-                    ${savingsRecommendation.tariffValue}/kWh
+                <div className="bg-cyan-50 p-4 rounded">
+                  <p className="text-gray-600 text-sm">Consumo actual</p>
+                  <p className="text-2xl font-bold text-cyan-900">
+                    {savingsRecommendation.currentConsumption} kWh/mes
                   </p>
                 </div>
 
