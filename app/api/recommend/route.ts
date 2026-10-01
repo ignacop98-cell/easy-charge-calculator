@@ -71,12 +71,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Calcular con margen de seguridad (20%)
-    const requiredPower = totalConsumption * 1.2
-
-    // Buscar producto que cubre el consumo
+    // El margen de seguridad ya fue aplicado en el cliente
+    // Solo buscamos el producto que cubre el consumo
     const recommendation = SECCO_PRODUCTS.find(
-      product => requiredPower <= product.maxPower
+      product => totalConsumption <= product.maxPower
     )
 
     if (!recommendation) {
@@ -96,8 +94,8 @@ export async function POST(request: NextRequest) {
       price: recommendation.price,
       autonomy: recommendation.autonomy,
       specs: recommendation.specs,
-      requiredPower: Math.round(requiredPower),
-      message: `✅ Este producto cubre tus necesidades (${Math.round(requiredPower)}W requeridos con margen de seguridad)`
+      requiredPower: Math.round(totalConsumption),
+      message: `✅ Este producto cubre tus necesidades (${Math.round(totalConsumption)}W requeridos con margen de seguridad)`
     })
   } catch (error) {
     console.error('Error in recommendation API:', error)
