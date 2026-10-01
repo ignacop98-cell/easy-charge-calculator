@@ -18,6 +18,7 @@ export default function EasyChargeCalculator() {
 
   // OPTIMIZADOR STATE
   const [billAmount, setBillAmount] = useState('')
+  const [tariff, setTariff] = useState('')
   const [dailyHours, setDailyHours] = useState('')
   const [savingsPercent, setSavingsPercent] = useState('')
   const [savingsRecommendation, setSavingsRecommendation] = useState<any>(null)
@@ -58,7 +59,7 @@ export default function EasyChargeCalculator() {
   }
 
   const calculateSavings = async () => {
-    if (!billAmount || !dailyHours || !savingsPercent) {
+    if (!billAmount || !tariff || !dailyHours || !savingsPercent) {
       setError('Por favor completa todos los campos')
       return
     }
@@ -68,17 +69,24 @@ export default function EasyChargeCalculator() {
 
     try {
       const bill = parseFloat(billAmount)
+      const tariffValue = parseFloat(tariff)
       const hours = parseFloat(dailyHours)
       const percent = parseFloat(savingsPercent) / 100
 
-      const estimatedTariff = 50
-      const monthlyConsumption = bill / estimatedTariff
+      // Consumo actual estimado
+      const monthlyConsumption = bill / tariffValue
       const dailyConsumption = monthlyConsumption / 30
+
+      // kWh que necesita generar diariamente
       const kWhToGenerate = dailyConsumption * percent * hours
+
+      // Watts necesarios
       const wattsNeeded = (kWhToGenerate * 1000) / hours
 
+      // Obtener recomendación del generador
       const response = await axios.post('/api/recommend', { totalConsumption: wattsNeeded })
 
+      // Calcular ahorros
       const monthlySavings = bill * percent
       const annualSavings = monthlySavings * 12
       const paybackMonths = Math.ceil((response.data.price ? parseFloat(response.data.price.replace(/[^0-9]/g, '')) : 500000) / monthlySavings)
@@ -86,6 +94,7 @@ export default function EasyChargeCalculator() {
       setSavingsRecommendation({
         ...response.data,
         currentBill: bill,
+        tariffValue: tariffValue,
         savingsPercent: percent * 100,
         monthlySavings,
         annualSavings,
@@ -333,16 +342,13 @@ export default function EasyChargeCalculator() {
                 </button>
               </div>
 
-              {/* PDF - Factura profesional (oculto) */}
               <div id="pdf-calculador" className="hidden">
                 <div style={{ width: '210mm', height: '297mm', padding: '20px', fontFamily: 'Arial, sans-serif', fontSize: '12px', backgroundColor: 'white' }}>
-                  {/* Header */}
                   <div style={{ borderBottom: '3px solid #1F4E78', paddingBottom: '15px', marginBottom: '20px' }}>
                     <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#1F4E78' }}>EASY CHARGE</div>
                     <div style={{ fontSize: '11px', color: '#666' }}>Soluciones de Energía Renovable</div>
                   </div>
 
-                  {/* Datos de Cotización */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', fontSize: '11px' }}>
                     <div>
                       <div><strong>Cotización Nº:</strong> EC-{new Date().getFullYear()}-{Math.floor(Math.random() * 10000)}</div>
@@ -354,7 +360,6 @@ export default function EasyChargeCalculator() {
                     </div>
                   </div>
 
-                  {/* Equipos */}
                   <div style={{ marginBottom: '20px' }}>
                     <div style={{ fontWeight: 'bold', marginBottom: '10px', fontSize: '13px', borderBottom: '2px solid #1F4E78', paddingBottom: '5px' }}>
                       EQUIPOS SOLICITADOS
@@ -381,7 +386,6 @@ export default function EasyChargeCalculator() {
                     </table>
                   </div>
 
-                  {/* Recomendación */}
                   <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#F0F8F0', border: '2px solid #4CAF50' }}>
                     <div style={{ fontWeight: 'bold', marginBottom: '10px', fontSize: '13px', color: '#1F4E78' }}>
                       ✓ GENERADOR RECOMENDADO
@@ -397,7 +401,6 @@ export default function EasyChargeCalculator() {
                     </div>
                   </div>
 
-                  {/* Beneficios */}
                   <div style={{ marginBottom: '20px', paddingLeft: '10px', fontSize: '11px', lineHeight: '1.6' }}>
                     <strong>Beneficios de esta solución:</strong>
                     <ul style={{ marginTop: '5px', paddingLeft: '20px' }}>
@@ -408,7 +411,6 @@ export default function EasyChargeCalculator() {
                     </ul>
                   </div>
 
-                  {/* Firma */}
                   <div style={{ marginTop: '30px', borderTop: '1px solid #999', paddingTop: '20px', fontSize: '11px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <div style={{ textAlign: 'center', width: '45%' }}>
@@ -424,7 +426,6 @@ export default function EasyChargeCalculator() {
                     </div>
                   </div>
 
-                  {/* Footer */}
                   <div style={{ marginTop: '20px', paddingTop: '10px', borderTop: '1px solid #999', textAlign: 'center', fontSize: '9px', color: '#666' }}>
                     <div>Easy Charge - Soluciones de Energía Renovable</div>
                     <div>Energía sostenible para tu futuro</div>
@@ -468,11 +469,25 @@ export default function EasyChargeCalculator() {
                 </label>
                 <input
                   type="number"
-                  placeholder="Ej: 100000"
+                  placeholder="Ej: 280000"
                   value={billAmount}
                   onChange={(e) => setBillAmount(e.target.value)}
                   className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
+              </div>
+
+              <div>
+                <label className="block text-gray-700 font-semibold mb-2">
+                  ⚡ Tarifa de tu zona ($/kWh)
+                </label>
+                <input
+                  type="number"
+                  placeholder="Ej: 45, 60, 85"
+                  value={tariff}
+                  onChange={(e) => setTariff(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+                <p className="text-gray-500 text-sm mt-1">Tarifa promedio por kWh en tu provincia</p>
               </div>
 
               <div>
@@ -520,6 +535,13 @@ export default function EasyChargeCalculator() {
                   <p className="text-gray-600 text-sm">Factura actual</p>
                   <p className="text-2xl font-bold text-blue-900">
                     ${savingsRecommendation.currentBill.toLocaleString()}
+                  </p>
+                </div>
+
+                <div className="bg-purple-50 p-4 rounded">
+                  <p className="text-gray-600 text-sm">Tarifa de tu zona</p>
+                  <p className="text-2xl font-bold text-purple-900">
+                    ${savingsRecommendation.tariffValue}/kWh
                   </p>
                 </div>
 
